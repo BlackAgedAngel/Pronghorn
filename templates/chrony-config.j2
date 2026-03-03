@@ -1,0 +1,12 @@
+# Chrony configuration file for Ubuntu LTS (Ubuntu NTP pools)
+
+# Use Ubuntu's public NTP pools; each pool line adds a set of servers.
+# iburst speeds up initial sync; maxsources limits how many from the pool are used.
+pool 2.ubuntu.pool.ntp.org iburst maxsources 4
+pool 3.ubuntu.pool.ntp.org iburst maxsources 4
+
+driftfile /var/lib/chrony/chrony.drift
+logdir /var/log/chrony
+
+makestep 1.0 3
+rtcsync

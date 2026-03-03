@@ -1,0 +1,35 @@
+all:
+  vars:
+    ansible_user: prhadmin
+    ansible_ssh_private_key_file: /home/prhadmin/.ssh/id_ed25519
+  children:
+    mgmt:
+      hosts:
+        prh-master: { ansible_host: 10.0.15.10 }
+        prh-login: { ansible_host: 10.0.15.15 }
+        prh-performance: { ansible_host: 10.0.15.25 }
+    cpu:
+      hosts:
+        prh-cpu-01: { ansible_host: 10.0.10.11 }
+        prh-cpu-02: { ansible_host: 10.0.10.12 }
+        prh-cpu-03: { ansible_host: 10.0.10.13 }
+        prh-cpu-04: { ansible_host: 10.0.10.14 }
+        prh-cpu-05: { ansible_host: 10.0.10.15 }
+        prh-cpu-06: { ansible_host: 10.0.10.16 }
+        prh-cpu-07: { ansible_host: 10.0.10.17 }
+        prh-cpu-08: { ansible_host: 10.0.10.18 }
+    gpu:
+      hosts:
+        prh-gpu-01: { ansible_host: 10.0.10.101 }
+        prh-gpu-02: { ansible_host: 10.0.10.102 }
+        prh-gpu-03: { ansible_host: 10.0.10.103 }
+        prh-gpu-04: { ansible_host: 10.0.10.104 }
+    storage:
+      hosts:
+#        prh-storage-01: { ansible_host: 10.0.15.30 }
+ #       prh-storage-02: { ansible_host: 10.0.15.31 }
+  #      prh-storage-03: { ansible_host: 10.0.15.32 }
+   #     prh-storage-04: { ansible_host: 10.0.15.33 }
+    chrony_master:
+      hosts:
+        prh-master: { ansible_host: 10.0.15.10 }

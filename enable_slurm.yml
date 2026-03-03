@@ -1,0 +1,11 @@
+---
+- name: Enable and start slurmd on all compute nodes
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Enable and start slurmd
+      ansible.builtin.systemd:
+        name: slurmd
+        enabled: yes
+        state: started

@@ -1,0 +1,27 @@
+---
+- name: Create HPC Admin user across cluster
+  hosts: all
+  gather_facts: false
+  become: true
+
+  vars:
+    admin_user: prhadmin
+    admin_uid: 2001
+    admin_pass: "TwH8wXBM88qh0H1jIQO1" #need to add a temp pass reset after first 
+                              #login at the end
+  tasks:
+    - name: Create admin user
+      user:
+        name: "{{ admin_user }}"
+        uid: "{{ admin_uid }}"
+        groups: sudo,adm,munge
+        shell: /bin/bash
+        create_home: yes
+        state: present
+
+    - name: Set password (Temp)
+      ansible.builtin.user:
+        name: "{{ admin_user }}"
+        password: "{{ admin_pass | password_hash('sha512') }}"
+
+

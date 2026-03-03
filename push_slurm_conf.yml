@@ -1,0 +1,22 @@
+---
+- name: Push /etc/slurm/slurm.conf to all nodes
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Create /etc/slurm directory
+      ansible.builtin.file:
+        path: /etc/slurm
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Copy slurm.conf to /etc/slurm/slurm.conf
+      ansible.builtin.copy:
+        src: /etc/slurm/slurm.conf
+        dest: /etc/slurm/slurm.conf
+        owner: root
+        group: root
+        mode: "0644"
+        backup: yes

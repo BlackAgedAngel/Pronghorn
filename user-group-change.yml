@@ -1,0 +1,34 @@
+---
+- name: Change user group(s) on nodes
+  hosts: all
+  become: yes
+
+  vars:
+    target_user: "prhadmin"                    # CHANGE TO: the username you want to modify
+    new_primary_group: munge                # CHANGE TO: new primary group, or leave empty
+    new_supplementary_groups:                 # CHANGE TO: list of secondary groups
+      - adm
+      - sudo
+      - munge
+
+  tasks:
+    - name: Ensure target primary group exists (if new_primary_group is set)
+      group:
+        name: "{{ new_primary_group }}"
+        state: present
+      when: new_primary_group is defined and new_primary_group | length > 0
+
+    - name: Change user's primary group and/or secondary groups
+      user:
+        name: "{{ target_user }}"
+        # Optional: change primary group
+        group: "{{ new_primary_group | default(omit) }}"
+
+        # Optional: list of supplementary groups
+        groups: "{{ new_supplementary_groups | default([]) }}"
+
+        # append: yes = add to existing groups
+        # append: no = replace ALL supplementary groups with this list
+        append: yes                            # <-- set to no to replace groups instead of add
+      when:
+        - target_user is defined

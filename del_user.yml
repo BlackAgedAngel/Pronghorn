@@ -1,0 +1,14 @@
+---
+- name: Delete sudo user and home directory
+  hosts: all          # or a specific group/host
+  become: yes
+
+  vars:
+    target_user: "prhuser"   # change to the user you want to delete
+
+  tasks:
+    - name: Ensure user is removed (including home directory)
+      ansible.builtin.user:
+        name: "{{ target_user }}"
+        state: absent
+        remove: yes

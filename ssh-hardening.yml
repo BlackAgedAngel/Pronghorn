@@ -1,0 +1,71 @@
+---
+- name: Harden SSH on all nodes
+  hosts: all
+  become: true
+
+  vars:
+    sshd_config_path: /etc/ssh/sshd_config
+    sshd_configd_path: /etc/ssh/sshd_config.d/50-cloud-init.conf
+
+  tasks:
+    - name: Ensure sshd_config has correct permissions
+      ansible.builtin.file:
+        path: "{{ sshd_config_path }}"
+        mode: '0600'
+        owner: root
+        group: root
+
+    - name: Set PubkeyAuthentication to yes
+      ansible.builtin.lineinfile:
+        path: "{{ sshd_config_path }}"
+        regexp: '^#?PubkeyAuthentication'
+        line: 'PubkeyAuthentication yes'
+        state: present
+
+    - name: Disable PasswordAuthentication
+      ansible.builtin.lineinfile:
+        path: "{{ sshd_config_path }}"
+        regexp: '^#?PasswordAuthentication'
+        line: 'PasswordAuthentication no'
+        state: present
+
+    - name: Disable root SSH login
+      ansible.builtin.lineinfile:
+        path: "{{ sshd_config_path }}"
+        regexp: '^#?PermitRootLogin'
+        line: 'PermitRootLogin no'
+        state: present
+        backup: yes
+
+    - name: Prevent empty passwords
+      ansible.builtin.lineinfile:
+        path: "{{ sshd_config_path }}"
+        regexp: '^#?PermitEmptyPasswords'
+        line: 'PermitEmptyPasswords no'
+        state: present
+
+#looking into it
+#    - name: Enable strict key checking (optional, but secure)
+ #     ansible.builtin.lineinfile:
+  #      path: "{{ sshd_config_path }}"
+   #     regexp: '^#?StrictModes'
+    #    line: '#StrictModes yes'
+     #   state: present
+    - name: Disable Password Auth in .d
+      ansible.builtin.lineinfile:
+        path: "{{ sshd_configd_path }}"
+        regexp: '^#?PasswordAuthentication'
+        line: 'PasswordAuthentication no'
+        state: present
+
+    - name: Reload sshd gracefully
+      ansible.builtin.systemd:
+        name: ssh
+        state: reloaded
+      notify: restart sshd if needed
+
+  handlers:
+    - name: restart sshd if needed
+      ansible.builtin.systemd:
+        name: ssh
+        state: restarted

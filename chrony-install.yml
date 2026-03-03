@@ -1,0 +1,32 @@
+---
+- name: Install and configure chrony on Ubuntu LTS cluster nodes
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Install chrony package
+      apt:
+        name: chrony
+        state: present
+        update_cache: yes
+
+    - name: Ensure chrony service is enabled and started
+      service:
+        name: chrony
+        state: started
+        enabled: yes
+
+    - name: Copy basic chrony configuration
+      ansible.builtin.template:
+        src: chrony-config.j2
+        dest: /etc/chrony/chrony.conf
+        owner: root
+        group: root
+        mode: "0644"
+      notify: restart chrony
+
+  handlers:
+    - name: restart chrony
+      service:
+        name: chrony
+        state: restarted

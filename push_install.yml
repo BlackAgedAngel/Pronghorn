@@ -1,0 +1,43 @@
+---
+# File: push_install.yml
+# Target OS: Ubuntu LTS (20.04/22.04)
+# Role: Install Python3 stack and tools:
+#   - 1) everything available via apt
+#   - 2) remaining via pip3 (e.g., jupyterlab, nextflow).
+
+- name: Install Python3 stack and tools (apt + pip3)
+  hosts: all
+  become: yes
+
+  vars:
+    # Packages that exist in Ubuntu apt
+    python3_apt_pkgs:
+      - python3
+      - python3-pip
+      - python3-venv
+      - python3-virtualenv
+      - python3-numpy
+      - python3-scipy
+      - python3-matplotlib
+      - python3-pandas
+      - python3-h5py
+      - python3-mpi4py
+      - python3-dask
+      - git
+      - wget
+      - curl
+      - rsync
+      - htop
+      - snakemake        # available in Ubuntu 22.04
+
+  tasks:
+    - name: Update apt cache and upgrade base packages
+      ansible.builtin.apt:
+        update_cache: yes
+        upgrade: safe
+
+    - name: Install Python3 and tools via apt (all that can be done here)
+      ansible.builtin.apt:
+        name: "{{ python3_apt_pkgs }}"
+        state: present
+

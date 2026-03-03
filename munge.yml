@@ -1,0 +1,79 @@
+---
+- name: Install munge and distribute key from prh-master
+  hosts: all
+  become: yes
+
+  vars:
+    munge_key_host: prh-master
+    munge_key_path: /etc/munge/munge.key
+    munge_key_tmp: "/tmp/munge.key"
+
+  tasks:
+    - name: Install munge package (Ubuntu LTS)
+      apt:
+        name: munge
+        state: present
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+
+   # - name: Ensure munge directories exist
+     # file:
+       # path: "{{ item }}"
+       # state: directory
+       # owner: munge
+      #  group: munge
+     #   mode: "0750"
+    #  loop:
+   #     - /etc/munge
+  #      - /var/log/munge
+ #       - /var/lib/munge
+#        - /run/munge
+
+    - name: Ensure munge directories exist
+      file:
+        path: "{{ item.path }}"
+        state: directory
+        owner: munge
+        group: munge
+        mode: "{{ item.mode }}"
+      loop:
+        - { path: "/etc/munge",     mode: "0750" }
+        - { path: "/var/log/munge", mode: "0750" }
+        - { path: "/var/lib/munge", mode: "0750" }
+        - { path: "/run/munge",     mode: "0755" }
+
+    - name: Generate munge key on prh-master if missing
+      command: /usr/sbin/create-munge-key
+      args:
+        creates: "{{ munge_key_path }}"
+      when: inventory_hostname == munge_key_host
+
+    - name: Set munge key owner/permissions on prh-master
+      file:
+        path: "{{ munge_key_path }}"
+        owner: munge
+        group: munge
+        mode: "0600"
+      when: inventory_hostname == munge_key_host
+
+    - name: Fetch munge key from prh-master to controller
+      fetch:
+        src: "{{ munge_key_path }}"
+        dest: "{{ munge_key_tmp }}"
+        flat: yes
+      delegate_to: "{{ munge_key_host }}"
+      run_once: yes
+
+    - name: Copy munge key from controller to all nodes
+      copy:
+        src: "{{ munge_key_tmp }}"
+        dest: "{{ munge_key_path }}"
+        owner: munge
+        group: munge
+        mode: "0600"
+
+    - name: Ensure munge service is enabled and running
+      systemd:
+        name: munge.service
+        state: started
+        enabled: yes

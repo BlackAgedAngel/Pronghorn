@@ -1,0 +1,24 @@
+--- #deploy-admin-ssh.yml
+  - name: Deploy SSH key for admin user(s)
+    hosts: all
+    become: true
+
+    vars:
+      admin_user: prhadmin
+      control_key_path: "{{ lookup('env','HOME') + '/.ssh/id_ed25519.pub' }}"
+      control_ssh_key: "{{ lookup('file', control_key_path) }}"
+
+    tasks:
+      - name: Ensure admin user's .ssh dir exists
+        ansible.builtin.file:
+          path: "/home/{{ admin_user }}/.ssh"
+          state: directory
+          owner: "{{ admin_user }}"
+          group: "{{ admin_user }}"
+          mode: '0700'
+
+      - name: Install control-node SSH key for admin user
+        ansible.posix.authorized_key:
+          user: "{{ admin_user }}"
+          state: present
+          key: "{{ control_ssh_key }}"

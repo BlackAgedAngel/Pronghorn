@@ -1,0 +1,27 @@
+---
+- name: Add all cluster hosts to hpcadmin known_hosts
+  hosts: localhost
+  gather_facts: false
+
+  vars:
+    admin_user: prhadmin
+    known_hosts_path: "/home/{{ admin_user }}/.ssh/known_hosts"
+
+  tasks:
+    - name: Ensure .ssh exists for admin user
+      ansible.builtin.file:
+        path: "/home/{{ admin_user }}/.ssh"
+        state: directory
+        owner: "{{ admin_user }}"
+        group: "{{ admin_user }}"
+        mode: '0700'
+
+    - name: Scan and add SSH host keys for all inventory hosts
+      ansible.builtin.known_hosts:
+        path: "{{ known_hosts_path }}"
+        name: "{{ hostvars[item].ansible_host | default(item) }}"
+        key: "{{ lookup('pipe', 'ssh-keyscan -T 5 ' + (hostvars[item].ansible_host | default(item)) + ' 2>/dev/null') }}"
+        state: present
+      loop: "{{ groups['all'] }}"
+      become: true
+      become_user: "{{ admin_user }}"

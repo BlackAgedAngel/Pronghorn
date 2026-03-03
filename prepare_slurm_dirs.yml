@@ -1,0 +1,56 @@
+---
+- name: Prepare Slurm directories on all nodes
+  hosts: all
+  become: yes
+
+  vars:
+    slurm_user: slurm
+    slurm_group: slurm
+    slurm_etc: /etc/slurm
+    slurm_spool: /var/spool/slurm
+    slurm_log:  /var/log/slurm
+
+  tasks:
+    - name: Ensure slurm group exists
+      group:
+        name: "{{ slurm_group }}"
+        state: present
+
+    - name: Ensure slurm user exists
+      user:
+        name: "{{ slurm_user }}"
+        group: "{{ slurm_group }}"
+        createhome: no
+        append: yes
+
+    - name: Create /etc/slurm directory
+      file:
+        path: "{{ slurm_etc }}"
+        state: directory
+        mode: "0755"
+        owner: "{{ slurm_user }}"
+        group: "{{ slurm_group }}"
+
+    - name: Create /var/spool/slurm directory
+      file:
+        path: "{{ slurm_spool }}"
+        state: directory
+        mode: "0755"
+
+    - name: Create /var/log/slurm directory
+      file:
+        path: "{{ slurm_log }}"
+        state: directory
+        mode: "0755"
+        owner: "{{ slurm_user }}"
+        group: "{{ slurm_group }}"
+
+    - name: Set ownership on /var/spool/slurm and /var/log/slurm
+      file:
+        path: "{{ item }}"
+        owner: "{{ slurm_user }}"
+        group: "{{ slurm_group }}"
+        recurse: yes
+      loop:
+        - "{{ slurm_spool }}"
+        - "{{ slurm_log }}"

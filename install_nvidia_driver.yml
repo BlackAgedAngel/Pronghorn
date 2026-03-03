@@ -1,0 +1,21 @@
+---
+- name: Install NVIDIA driver 535‑server on all nodes
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install nvidia-driver-535-server
+      ansible.builtin.apt:
+        name: nvidia-driver-535-server
+        state: present
+        update_cache: no
+
+    - name: Reboot node after driver install
+      ansible.builtin.reboot:
+        reboot_timeout: 300
+        post_reboot_delay: 60

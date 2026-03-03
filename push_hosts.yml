@@ -1,0 +1,14 @@
+---
+- name: Push /etc/hosts to all nodes
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Copy /etc/hosts from control node to managed nodes
+      ansible.builtin.copy:
+        src: /etc/hosts
+        dest: /etc/hosts
+        owner: root
+        group: root
+        mode: "0644"
+        backup: yes
